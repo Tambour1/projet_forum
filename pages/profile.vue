@@ -14,13 +14,13 @@ onMounted(() => {
   if (session.value && session.value.user) {
     user.value = session.value.user;
   } else {
-    router.push('/login');
+    router.push('/');
   }
 });
 
 const logout = async () => {
   await reset();
-  router.push('/login');
+  router.push('/');
 };
 </script>
 

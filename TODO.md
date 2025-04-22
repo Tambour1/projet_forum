@@ -1,0 +1,1 @@
+- [ ] Chip vuetify pour la pastille du forum sur un sujet
