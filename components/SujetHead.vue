@@ -21,7 +21,7 @@ defineProps<{
     <div class="flex justify-between items-start mb-4">
       <!-- Partie auteur -->
       <div class="flex items-center">
-        <NuxtLink to="/" class="bg-gray-600 hover:bg-gray-300 p-2 rounded-full mr-3">
+        <NuxtLink v-if="withDescription" to="/" class="bg-gray-600 hover:bg-gray-300 p-2 rounded-full mr-3">
           <component :is="ChevronLeftIcon" class="w-5 h-5 text-white" />
         </NuxtLink>
         <img src="/public/utilisateur.png" alt="profil" class="rounded-full mr-4" width="40" height="40" />
@@ -42,6 +42,6 @@ defineProps<{
 
     <p v-if="withDescription" class="text-gray-500 mt-8">{{ sujet.content }}</p>
 
-    <v-divider v-if="withDescription" class="mt-10" />
+    <v-divider class="mt-10" />
   </div>
 </template>

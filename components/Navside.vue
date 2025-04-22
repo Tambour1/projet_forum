@@ -45,6 +45,8 @@ const toggleGroup = (index: number) => {
 const toggleItem = (index: number) => {
     openItem.value = openItem.value === index ? null : index
 }
+
+
 </script>
 
 <template>

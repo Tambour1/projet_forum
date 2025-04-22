@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { timeSince } from '../../mixins/utils'
-import { ChevronLeftIcon } from '@heroicons/vue/24/solid'
 
 const route = useRoute()
 const sujetId = route.params.id

@@ -1,12 +1,10 @@
 <script setup>
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
 
 const emit = defineEmits(['close']);
 
 const username = ref('');
 const password = ref('');
-const router = useRouter();
 
 const loginUser = async () => {
     const response = await $fetch('/api/login', {
@@ -17,8 +15,8 @@ const loginUser = async () => {
     if (response.error) {
         alert(response.error);
     } else {
+        await refreshNuxtData(); 
         emit('close');
-        router.push('/profile');
     }
 };
 </script>
