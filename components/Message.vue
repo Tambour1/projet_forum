@@ -10,7 +10,7 @@ defineProps<{
         created_at: string
         content: string
     }
-    currentUser: {
+    currentUser?: {
         id: number
         username: string
         role: string
@@ -66,7 +66,7 @@ const confirmDeleteMessage = () => {
 
         <!-- Deux boutons-->
         <div class="flex justify-end items-center gap-2 mt-4"
-            v-if="!showEdit && (message.author === currentUser.username || currentUser.role === 'admin')">
+            v-if="!showEdit && (message.author === currentUser?.username || currentUser?.role === 'admin')">
             <button
                 class="flex items-center text-sm text-gray-400 rounded-full px-4 py-2 hover:bg-gray-500 hover:text-white"
                 @click="editMessage">

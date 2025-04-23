@@ -1,4 +1,4 @@
-- [ ] Requete API pour récupérer les messages d'un sujet
+- [x] Requete API pour récupérer les messages d'un sujet
 - [ ] Ajouter la logique d'ajout d'un nouveau message
 - [ ] Logique de modification d'un message
 - [ ] Logique de supression d'un message

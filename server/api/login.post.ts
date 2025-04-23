@@ -7,13 +7,9 @@ export default defineWrappedResponseHandler(async (event) => {
   if (!username || !password) {
     return { error: "username et mot de passe sont requis" };
   }
-  const db = event.context.mysql
 
-  const [rows] = await db.execute(
-    "SELECT * FROM users WHERE username = ?",
-    [username]
-  );
-
+  const db = event.context.mysql;
+  const [rows] = await db.execute("SELECT * FROM users WHERE username = ?", [username]);
   await db.end();
 
   if (rows.length === 0) {
@@ -28,7 +24,12 @@ export default defineWrappedResponseHandler(async (event) => {
     return { error: "Mot de passe incorrect" };
   }
 
-  event.context.session.user = { id: user.id, username: user.username, role: user.role, avatar: user.avatar };
+  event.context.session.user = {
+    id: user.id,
+    username: user.username,
+    role: user.role,
+    avatar: user.avatar
+  }  
 
   return { message: "Connexion réussie" };
 });

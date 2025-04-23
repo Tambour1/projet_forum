@@ -12,7 +12,7 @@ defineProps<{
     title: string
     content?: string
   },
-  currentUser: {
+  currentUser?: {
     id: number
     username: string
     role: string
@@ -53,7 +53,7 @@ function handleDeleteSubject() {
     <div class="flex space-x-4">
       <h2 class="text-3xl font-semibold text-white">{{ sujet.title }}</h2>
       <button @click="showDeleteModal = true" class="hover:bg-red-600 text-white p-2 rounded-full">
-        <component v-if="currentUser.role === 'admin'" :is="TrashIcon" class="w-6 h-6 text-white" />
+        <component v-if="currentUser?.role === 'admin'" :is="TrashIcon" class="w-6 h-6 text-white" />
       </button>
     </div>
 
