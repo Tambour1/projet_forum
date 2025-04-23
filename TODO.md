@@ -1,1 +1,5 @@
-- [ ] Chip vuetify pour la pastille du forum sur un sujet
+- [ ] Requete API pour récupérer les messages d'un sujet
+- [ ] Ajouter la logique d'ajout d'un nouveau message
+- [ ] Logique de modification d'un message
+- [ ] Logique de supression d'un message
+- [ ] Logique de suppression d'un sujet avec tous les messages associés
