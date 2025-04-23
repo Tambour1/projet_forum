@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS forums (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL
+    description TEXT NOT NULL,
 );
 
 -- Création de la table sujets
