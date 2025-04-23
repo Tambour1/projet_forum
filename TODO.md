@@ -3,3 +3,5 @@
 - [ ] Logique de modification d'un message
 - [ ] Logique de supression d'un message
 - [ ] Logique de suppression d'un sujet avec tous les messages associés
+- [ ] NuxtLink sur Sujet head pour etre redirigé vers le sujet
+- [ ] NuxtLink sur liste forum pour etre redirigé

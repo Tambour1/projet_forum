@@ -1,37 +1,68 @@
 <script setup lang="ts">
-import { useRoute } from 'vue-router';
-import { ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { ref, computed } from 'vue';
+import { PlusIcon } from '@heroicons/vue/24/solid';
 
 const route = useRoute();
 const router = useRouter();
-const sujets = ref([]);
-const errorMessage = ref('');
 const forumId = route.params.id;
 
-const showLoginModal = ref(false);
+const modalType = ref<null | 'login' | 'register'>(null);
+
+const currentUser = ref({
+  id: 1,
+  username: 'user42',
+  role: 'admin',
+});
 
 const handleNewSujetClick = async () => {
   const { session } = await useSession();
 
   if (!session.value?.user) {
-    showLoginModal.value = true;
+    modalType.value = 'login';
   } else {
     router.push(`/forums/${forumId}/new`);
   }
 };
 
+// const { data, error } = await useAsyncData('forum-sujets', () =>
+//   $fetch(`/api/forums/${forumId}`)
+// );
+
+// Simuler la réponse API
 const { data, error } = await useAsyncData('forum-sujets', () =>
-  $fetch(`/api/forums/${forumId}`)
+  Promise.resolve({
+    forum_name: 'Programmation Web',
+    sujets: [
+      {
+        id: 1,
+        title: 'Comment débuter avec Vue 3 ?',
+        author: 'devstarter',
+        forum_name: 'Programmation Web',
+        created_at: '2024-04-20 10:30:00'
+      },
+      {
+        id: 2,
+        title: 'Typescript ou JavaScript ?',
+        author: 'jsfanboy',
+        forum_name: 'Programmation Web',
+        created_at: '2024-04-21 16:45:00'
+      },
+      {
+        id: 3,
+        title: 'Frameworks CSS : Tailwind vs Bootstrap',
+        author: 'designersoul',
+        forum_name: 'Programmation Web',
+        created_at: '2024-04-22 08:15:00'
+      }
+    ]
+  })
 );
 
-if (error.value) {
-  errorMessage.value = "Erreur lors du chargement des sujets.";
-} else if (!Array.isArray(data.value?.sujets)) {
-  errorMessage.value = "Réponse invalide du serveur.";
-} else {
-  sujets.value = data.value.sujets;
-}
+const sujets = computed(() => data.value?.sujets || []);
+const errorMessage = ref('');
 </script>
+
 
 <template>
   <div class="min-h-screen bg-[#1a1a1b] py-8 px-4">
@@ -41,46 +72,42 @@ if (error.value) {
       {{ errorMessage }}
     </div>
 
-    <!-- En-tête du forum -->
+    <!-- En-tête -->
     <div class="relative mb-24">
-      <!-- Bannière -->
       <div class="w-full h-[150px] md:h-[182px] bg-center bg-cover rounded-lg"
-        style="background-image: url('/banner.jpg');">
-      </div>
+        style="background-image: url('/banner.jpg');"></div>
 
-      <!-- Icône + Titre + Bouton -->
       <div class="absolute left-6 -bottom-12 flex items-center w-full pr-6 justify-between">
-        <!-- Icône + nom -->
         <div class="flex items-center">
           <div class="w-20 h-20 rounded-full border-4 border-white bg-gray-300 overflow-hidden">
-            <div class="w-full h-full bg-center bg-cover" style="background-image: url('/icon.jpg');">
-            </div>
+            <div class="w-full h-full bg-center bg-cover" style="background-image: url('/icon.jpg');"></div>
           </div>
           <h1 class="ml-4 text-2xl md:text-3xl font-bold text-white mt-12">
             /{{ data.forum_name }}
           </h1>
         </div>
 
-        
         <!-- Bouton -->
-        <button class="ml-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow mt-12"
-          @click="handleNewSujetClick">
-          Nouveau sujet
-        </button>
-
+        <div
+          class="border-2 border-gray-400 text-white hover:border-gray-300 px-4 py-2 rounded-xl mt-13 absolute right-6">
+          <button @click="handleNewSujetClick" class="flex items-center gap-2">
+            <PlusIcon class="h-5 w-5 text-white" />
+            Nouveau sujet
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- Liste des sujets -->
     <div v-if="sujets.length > 0">
-      <SujetHead v-for="sujet in sujets" :key="sujet.id" :sujet="sujet" />
+      <SujetHead v-for="sujet in sujets" :key="sujet.id" :sujet="sujet" :currentUser="currentUser" />
     </div>
-
-    <LoginModal v-if="showLoginModal" @close="showLoginModal = false" />
-
-    <!-- Aucun sujet -->
-    <div v-else class="text-center text-gray-600 pt-16">
+    <div v-else class="text-center text-gray-500 pt-20">
       Aucun sujet trouvé pour ce forum.
     </div>
+
+    <!-- Modales -->
+    <LoginModal v-if="modalType === 'login'" @close="modalType = null" @switch-to-register="modalType = 'register'" />
+    <RegisterModal v-if="modalType === 'register'" @close="modalType = null" @switch-to-login="modalType = 'login'" />
   </div>
 </template>
