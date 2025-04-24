@@ -1,7 +1,8 @@
 - [x] Requete API pour récupérer les messages d'un sujet
 - [x] Ajouter la logique d'ajout d'un nouveau message
-- [ ] Logique de modification d'un message
-- [ ] Logique de supression d'un message
+- [x] Logique de modification d'un message
+- [x] Logique de supression d'un message
 - [ ] Logique de suppression d'un sujet avec tous les messages associés
 - [x] NuxtLink sur Sujet head pour etre redirigé vers le sujet
 - [x] NuxtLink sur liste forum pour etre redirigé
+- [ ] Regarder la session avec le NuxtTools pour voir si il y a besoin de refaire une route session

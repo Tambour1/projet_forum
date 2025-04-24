@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { defineProps, ref } from 'vue'
+import { ref } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { timeSince } from '../mixins/utils'
 import { PencilIcon, TrashIcon } from '@heroicons/vue/24/solid'
 
 const userStore = useUserStore()
 
-defineProps<{
+const props = defineProps<{
   message: {
     id: number
     author: string
@@ -21,7 +21,6 @@ const showDeleteModal = ref(false)
 
 const editMessage = () => {
   showEdit.value = true
-  editedMessage.value = props.message.content
 }
 
 const cancelEdit = () => {
@@ -29,20 +28,52 @@ const cancelEdit = () => {
   editedMessage.value = ''
 }
 
-const saveMessage = () => {
-  props.message.content = editedMessage.value
-  showEdit.value = false
-}
-
 const deleteMessage = () => {
-  console.log('Message supprimé')
   showDeleteModal.value = true
 }
 
-const confirmDeleteMessage = () => {
-  // logique de suppression du message
-  showDeleteModal.value = false
-}
+const saveMessage = async () => {
+  try {
+    const response = await fetch(`/api/messages/${props.message.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        content: editedMessage.value,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Erreur lors de la mise à jour');
+    }
+    showEdit.value = false;
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde du message :', error);
+  }
+};
+
+const confirmDeleteMessage = async () => {
+  try {
+    const response = await fetch(`/api/messages/${props.message.id}`, {
+      method: 'DELETE',
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Erreur lors de la suppression');
+    }
+
+    showDeleteModal.value = false;
+
+  } catch (error) {
+    console.error('Erreur lors de la suppression du message :', error);
+  }
+};
+
 </script>
 
 <template>
