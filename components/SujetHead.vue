@@ -17,6 +17,7 @@ defineProps<{
     forum_name: string
     title: string
     content?: string
+    last_message_date?: string
   },
   withDescription?: boolean,
   isLinkEnabled?: boolean
@@ -34,14 +35,18 @@ function handleDeleteSubject() {
     <component :is="isLinkEnabled ? NuxtLink : 'div'" :to="isLinkEnabled ? `/sujets/${sujet.id}` : undefined">
       <div class="flex justify-between items-start mb-4">
         <!-- Partie auteur -->
-        <div class="flex items-center">
-          <NuxtLink v-if="withDescription" @click.prevent="router.back()" class="bg-gray-600 hover:bg-gray-300 p-2 rounded-full mr-3 cursor-pointer">
+        <div class="flex items-center space-x-4">
+          <NuxtLink v-if="withDescription" @click.prevent="router.back()"
+            class="bg-gray-600 hover:bg-gray-300 p-2 rounded-full  cursor-pointer">
             <component :is="ChevronLeftIcon" class="w-5 h-5 text-white" />
           </NuxtLink>
-          <img src="/public/utilisateur.png" alt="profil" class="rounded-full mr-4" width="40" height="40" />
+          <img src="/public/utilisateur.png" alt="profil" class="rounded-full" width="40" height="40" />
           <p class="text-gray-400">
             Publié par <strong>{{ sujet.author }}</strong> - {{ timeSince(sujet.created_at) }}
           </p>
+          <div v-if="sujet.last_message_date" class="text-xs bg-gray-700 px-2 py-1 rounded-full text-gray-300">
+            Dernier message {{ timeSince(sujet.last_message_date) }}
+          </div>
         </div>
 
         <!-- Chip forum -->
@@ -55,8 +60,9 @@ function handleDeleteSubject() {
       <!-- Titre du sujet avec bouton de suppression -->
       <div class="flex space-x-4">
         <h2 class="text-3xl font-semibold text-white">{{ sujet.title }}</h2>
-        <button @click="showDeleteModal = true" class="hover:bg-red-600 text-white p-2 rounded-full">
-          <component v-if="userStore.currentUser?.role === 'admin'" :is="TrashIcon" class="w-6 h-6 text-white" />
+        <button v-if="userStore.currentUser?.role === 'admin'" @click="showDeleteModal = true"
+          class="hover:bg-red-600 text-white p-2 rounded-full">
+          <component :is="TrashIcon" class="w-6 h-6 text-white" />
         </button>
       </div>
 

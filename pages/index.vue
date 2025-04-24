@@ -30,7 +30,11 @@ await forumStore.fetchForums()
         </h2>
 
         <p class="text-gray-400 mt-1 text-sm">
-          {{ forum.description}}
+          {{ forum.description }}
+        </p>
+
+        <p class="text-gray-500 mt-2 text-xs italic">
+          {{ forum.sujetsCount }} sujet{{ forum.sujetsCount > 1 ? 's' : '' }}
         </p>
       </NuxtLink>
 

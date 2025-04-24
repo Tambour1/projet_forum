@@ -17,7 +17,7 @@ const loginUser = async () => {
     if (response.error) {
         alert(response.error);
     } else {
-        const { user } = await $fetch('/api/auth/session')
+        const { user } = await $fetch('/api/session')
 
         if (user) {
             userStore.login(user)

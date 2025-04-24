@@ -26,7 +26,7 @@ export default defineWrappedResponseHandler(async (event) => {
       [id]
     );
 
-    if (rows.length === 0) {
+    if (!rows.length) {
       return {
         status: 404,
         message: "Sujet non trouvé.",
@@ -34,9 +34,9 @@ export default defineWrappedResponseHandler(async (event) => {
     }
 
     return {
-      status:200,
-      sujet: rows[0]
-    } 
+      status: 200,
+      sujet: rows[0],
+    };
   } catch (error) {
     return {
       status: 500,

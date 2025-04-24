@@ -22,10 +22,12 @@ export default defineWrappedResponseHandler(async (event) => {
   try {
     const db = event.context.mysql;
 
+    const isoDate = new Date().toISOString(); 
+
     const [result] = await db.execute(
       `INSERT INTO messages (sujet_id, user_id, content, created_at)
-             VALUES (?, ?, ?, NOW())`,
-      [sujetId, user.id, content]
+       VALUES (?, ?, ?, ?)`,
+      [sujetId, user.id, content, isoDate]  
     );
 
     return {

@@ -7,102 +7,44 @@ const route = useRoute()
 const sujetId = route.params.id
 const showForm = ref(false)
 const newMessage = ref('')
-const isLoadingSujet = ref(true)
-const errorMessageSujet = ref('')
-const isLoadingMessage = ref(true)
-const errorMessage = ref('')
 const modalType = ref<null | 'login' | 'register'>(null)
 const userStore = useUserStore()
+const responseMessage = ref('')
+const responseMessageType = ref<'success' | 'error' | ''>('')
 
-// const { data : sujetData } = await useAsyncData(`sujet-${sujetId}`, () => {
-//   try {
-//     isLoadingSujet.value = true; 
-//     return $fetch(`/api/sujets/${sujetId}`);
-//   } finally {
-//     isLoadingSujet.value = false;
-//   }
-// }
-// );
 
-// const { data : messagesData } = await useAsyncData(`sujet-${sujetId}-messages`, () => {
-//   try {
-//     isLoadingMessage.value = true; 
-//     return $fetch(`/api/sujets/${sujetId}/messages`);
-//   } finally {
-//     isLoadingMessage.value = false;
-//   }
-// }
-// );
-const { data: sujetData } = await useAsyncData(`sujet-${sujetId}`, async () => {
-  try {
-    isLoadingSujet.value = true;
-    const response = await Promise.resolve({
-      status: 200,
-      message: 'Erreur blabla',
-      sujet: {
-        id: 1,
-        author: 'testuser',
-        created_at: '2024-04-22 12:00:00',
-        forum_name: 'Forum Général',
-        title: 'Sujet de test très intéressant',
-        content: 'Voici un exemple de contenu pour tester le rendu dans le composant.',
-      }
-    }
-    )
-    return response;
-  } finally {
-    isLoadingSujet.value = false;
+
+const { data: sujetData, pending: pendingSujet } = useAsyncData(`sujet-${sujetId}`, () =>
+  $fetch(`/api/sujets/${sujetId}`)
+);
+
+const errorSujet = computed(() => {
+  if (!sujetData.value) return '';
+  if (sujetData.value.status === 400 || sujetData.value.status === 500 || sujetData.value.status === 404) {
+    return sujetData.value.message;
   }
-}
-)
+  return '';
+});
 
-const { data: messagesData } = await useAsyncData(`sujet-${sujetId}-messages`, async () => {
-  try {
-    isLoadingMessage.value = true;
-    const response = await Promise.resolve({
-      status: 200,
-      message: "Blablaa",
-      messages: [
-        {
-          id: 1,
-          content: 'Je trouve ce sujet vraiment intéressant !',
-          author: 'user42',
-          created_at: '2024-04-22 12:30:00'
-        },
-        {
-          id: 2,
-          content: 'Merci pour le partage, ça m’a aidé à comprendre un truc.',
-          author: 'devnoob',
-          created_at: '2024-04-22 13:15:00'
-        },
-        {
-          id: 3,
-          content: 'Petite question : tu pourrais préciser un point ?',
-          author: 'curiouscat',
-          created_at: '2024-04-22 14:00:00'
-        }
-      ]
-    })
-    return response;
-  } finally {
-    isLoadingMessage.value = false
+const sujet = computed(() => {
+  return sujetData.value?.status === 200 ? sujetData.value?.sujet : {};
+});
+
+const { data: messageData, pending: pendingMessage } = useAsyncData(`sujet-${sujetId}-messages`, () =>
+  $fetch(`/api/sujets/${sujetId}/messages`)
+);
+
+const errorMessage = computed(() => {
+  if (!messageData.value) return '';
+  if (messageData.value.status === 400 || messageData.value.status === 500) {
+    return messageData.value.message;
   }
-})
+  return '';
+});
 
-if (sujetData.value?.status === 400 || sujetData.value?.status === 500 || sujetData.value?.status === 404) {
-  errorMessageSujet.value = sujetData.value.message;
-} else if (sujetData.value?.status === 200) {
-  errorMessageSujet.value = '';
-}
-
-if (messagesData.value?.status === 400 || messagesData.value?.status === 500) {
-  errorMessage.value = messagesData.value.message;
-} else if (sujetData.value?.status === 200) {
-  errorMessage.value = '';
-}
-
-const sujet = computed(() => sujetData.value?.sujet)
-const messages = computed(() => messagesData.value?.messages)
+const messages = computed(() => {
+  return messageData.value?.status === 200 ? messageData.value?.messages : [];
+});
 
 async function sendMessage() {
   if (!newMessage.value.trim()) return
@@ -116,13 +58,25 @@ async function sendMessage() {
     })
 
     if (response.status === 200) {
+      responseMessage.value = response.message
+      responseMessageType.value = 'success'
       newMessage.value = ''
       showForm.value = false
+    } else {
+      responseMessage.value = response.message
+      responseMessageType.value = 'error'
     }
-  } catch (err) {
-    console.error('Erreur lors de l’envoi du message', err)
+  } catch (err: any) {
+    responseMessage.value = 'Erreur inconnue lors de l’envoi.'
+    responseMessageType.value = 'error'
   }
+
+  setTimeout(() => {
+    responseMessage.value = ''
+    responseMessageType.value = ''
+  }, 2000)
 }
+
 
 function openNewMessage() {
   if (!userStore.isAuthenticated) {
@@ -135,16 +89,20 @@ function openNewMessage() {
 
 <template>
   <div class="min-h-screen bg-[#1a1a1b] py-8 px-4">
-    <SujetHead v-if="sujet && !errorMessageSujet && !isLoadingSujet" :sujet="sujet" :withDescription="true" :isLinkEnabled="false" />
-    <!-- Message d'erreur sujet -->
-    <div v-if="errorMessageSujet" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-      {{ errorMessageSujet }}
-    </div>
-    <Loader :isLoading="isLoadingSujet && !errorMessageSujet" message="Chargement du sujet..." />
 
+    <!-- Header du sujet -->
+    <Loader v-if="pendingSujet && !errorSujet" message="Chargement du sujet..." />
+    <div v-else-if="errorSujet" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+      {{ errorSujet }}
+    </div>
+
+    <div v-else-if="sujet">
+      <SujetHead :sujet="sujet" :withDescription="true" :isLinkEnabled="false" />
+    </div>
+
+    <!-- Ajout de message -->
     <div class="border-2 border-gray-500 text-gray-400 hover:text-white px-4 py-3 rounded-xl w-full mb-6">
-      <!-- Affichage par défaut : bouton -->
-      <div v-if="!showForm" @click="openNewMessage" class="cursor-pointer">
+      <div v-if="!showForm && (!pendingSujet || !pendingMessage)" @click="openNewMessage" class="cursor-pointer">
         Ajouter un message
       </div>
 
@@ -162,15 +120,28 @@ function openNewMessage() {
         </div>
       </div>
     </div>
-
-    <Message v-if="messages && !errorMessage && !isLoadingMessage" v-for="message in messages" :key="message.id" :message="message" />
     
-    <!-- Message d'erreur messages -->
-    <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+    <!-- Messages concernant l'ajout de message -->
+    <div v-if="responseMessage" :class="{
+      'bg-green-100 text-green-700 border-green-400': responseMessageType === 'success',
+      'bg-red-100 text-red-700 border-red-400': responseMessageType === 'error'
+    }" class="border px-4 py-3 rounded mb-4">
+      {{ responseMessage }}
+    </div>
+
+    <!-- Messages du sujet -->
+    <Loader v-if="pendingMessage && !errorMessage" message="Chargement des messages..." />
+    <div v-else-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
       {{ errorMessage }}
     </div>
 
-    <Loader :isLoading="isLoadingMessage && !errorMessage" message="Chargement des messages..." />
+    <div v-else-if="messages.length > 0">
+      <Message v-for="message in messages" :key="message.id" :message="message" />
+    </div>
+    <div v-else class="text-gray-400 text-center mb-12">
+      Aucun message trouvé.
+    </div>
+
     <v-divider></v-divider>
 
     <!-- Modales -->

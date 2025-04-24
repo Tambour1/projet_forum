@@ -9,65 +9,27 @@ const router = useRouter();
 const forumId = route.params.id;
 const userStore = useUserStore();
 
-const errorMessage = ref('');
-const isLoading = ref(true); 
-
 const modalType = ref<null | 'login' | 'register'>(null);
 
-// const { data } = await useAsyncData('forum-sujets', () => {
-//   try {
-//     isLoading.value = true; 
-//     return $fetch(`/api/forums/${forumId}`);
-//   } finally {
-//     isLoading.value = false;
-//   }
-// }
-// );
+const { data, pending } = useAsyncData('forum-sujets', () =>
+  $fetch(`/api/forums/${forumId}`)
+);
 
-const { data } = await useAsyncData('forum-sujets', async () => {
-  try {
-    isLoading.value = true;
-    const response = await Promise.resolve({
-      status: 200,
-      message: 'Erreur blabla',
-      forum_name: 'Programmation Web',
-      sujets: [
-        {
-          id: 1,
-          title: 'Comment débuter avec Vue 3 ?',
-          author: 'devstarter',
-          forum_name: 'Programmation Web',
-          created_at: '2024-04-20 10:30:00'
-        },
-        {
-          id: 2,
-          title: 'Typescript ou JavaScript ?',
-          author: 'jsfanboy',
-          forum_name: 'Programmation Web',
-          created_at: '2024-04-21 16:45:00'
-        },
-        {
-          id: 3,
-          title: 'Frameworks CSS : Tailwind vs Bootstrap',
-          author: 'designersoul',
-          forum_name: 'Programmation Web',
-          created_at: '2024-04-22 08:15:00'
-        }
-      ]
-    });
-    return response;
-  } finally {
-    isLoading.value = false; 
+const errorMessage = computed(() => {
+  if (!data.value) return '';
+  if (data.value.status === 400 || data.value.status === 500) {
+    return data.value.message;
   }
+  return '';
 });
 
-if (data.value?.status === 400 || data.value?.status === 500) {
-  errorMessage.value = data.value.message;
-} else if (data.value?.status === 200) {
-  errorMessage.value = '';
-}
+const sujets = computed(() => {
+  return data.value?.status === 200 ? data.value?.sujets : [];
+});
 
-const sujets = computed(() => data.value?.sujets || []);
+const forumName = computed(() => {
+  return data.value?.status === 200 ? data.value?.forum_name : '';
+});
 
 const openNewSujet = () => {
   if (!userStore.isAuthenticated) {
@@ -91,7 +53,7 @@ const openNewSujet = () => {
             <div class="w-full h-full bg-center bg-cover" style="background-image: url('/icon.jpg');"></div>
           </div>
           <h1 class="ml-4 text-2xl md:text-3xl font-bold text-white mt-12">
-            /{{ data.forum_name }}
+            /{{ forumName }}
           </h1>
         </div>
 
@@ -106,16 +68,18 @@ const openNewSujet = () => {
       </div>
     </div>
 
-    <Loader :isLoading="isLoading && !errorMessage" message="Chargement des sujets..." />
+    <Loader v-if="pending && !errorMessage" message="Chargement des sujets..." />
 
-    <!-- Message d'erreur -->
-    <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+    <div v-else-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
       {{ errorMessage }}
     </div>
 
-    <!-- Liste des sujets -->
-    <div v-if="sujets.length > 0 && !isLoading && !errorMessage">
-      <SujetHead v-for="sujet in sujets" :key="sujet.id" :sujet="sujet" :isLinkEnabled="true"/>
+    <div v-else-if="sujets.length > 0">
+      <SujetHead v-for="sujet in sujets" :key="sujet.id" :sujet="sujet" :isLinkEnabled="true" />
+    </div>
+
+    <div v-else class="text-center text-gray-400 mt-8">
+      Aucun sujet trouvé dans ce forum.
     </div>
 
     <!-- Modales -->

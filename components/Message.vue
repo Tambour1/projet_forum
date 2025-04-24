@@ -19,20 +19,12 @@ const showEdit = ref(false)
 const editedMessage = ref('')
 const showDeleteModal = ref(false)
 
-const editMessage = () => {
-  showEdit.value = true
-}
-
 const cancelEdit = () => {
   showEdit.value = false
   editedMessage.value = ''
 }
 
-const deleteMessage = () => {
-  showDeleteModal.value = true
-}
-
-const saveMessage = async () => {
+const editMessage = async () => {
   try {
     const response = await fetch(`/api/messages/${props.message.id}`, {
       method: 'PUT',
@@ -55,7 +47,7 @@ const saveMessage = async () => {
   }
 };
 
-const confirmDeleteMessage = async () => {
+const deleteMessage = async () => {
   try {
     const response = await fetch(`/api/messages/${props.message.id}`, {
       method: 'DELETE',
@@ -96,13 +88,13 @@ const confirmDeleteMessage = async () => {
       v-if="!showEdit && (message.author === userStore.currentUser?.username || userStore.currentUser?.role === 'admin')">
       <button
         class="flex items-center text-sm text-gray-400 rounded-full px-4 py-2 hover:bg-gray-500 hover:text-white"
-        @click="editMessage">
+        @click="showEdit = true">
         <PencilIcon class="h-5 w-5 mr-2" />
         Modifier
       </button>
       <button
         class="flex items-center text-sm text-gray-400 rounded-full px-4 py-2 hover:bg-red-500 hover:text-white"
-        @click="deleteMessage">
+        @click="showDeleteModal = true">
         <TrashIcon class="h-5 w-5 mr-2" />
         Supprimer
       </button>
@@ -116,7 +108,7 @@ const confirmDeleteMessage = async () => {
         <button class="px-4 py-2 rounded-full bg-gray-600 text-white hover:bg-gray-700" @click="cancelEdit">
           Annuler
         </button>
-        <button class="px-4 py-2 rounded-full bg-pink-600 text-white hover:bg-pink-700" @click="saveMessage">
+        <button class="px-4 py-2 rounded-full bg-pink-600 text-white hover:bg-pink-700" @click="editMessage">
           Enregistrer
         </button>
       </div>
@@ -131,7 +123,7 @@ const confirmDeleteMessage = async () => {
           <button class="px-4 py-2 bg-gray-600 text-white rounded-full" @click="showDeleteModal = false">
             Annuler
           </button>
-          <button class="px-4 py-2 bg-red-600 text-white rounded-full" @click="confirmDeleteMessage">
+          <button class="px-4 py-2 bg-red-600 text-white rounded-full" @click="deleteMessage">
             Supprimer
           </button>
         </div>

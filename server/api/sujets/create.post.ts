@@ -20,11 +20,12 @@ export default defineWrappedResponseHandler(async (event) => {
 
   try {
     const db = event.context.mysql;
+    const isoDate = new Date().toISOString(); 
 
     await db.execute(
       `INSERT INTO sujets (content, forum_id, title, user_id, created_at)
-         VALUES (?, ?, ?, ?, NOW())`,
-      [content, forumId, title, user.id]
+         VALUES (?, ?, ?, ?, ?)`,
+      [content, forumId, title, user.id, isoDate]
     );
 
     return { 

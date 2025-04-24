@@ -1,7 +1,7 @@
 export default defineWrappedResponseHandler(async (event) => {
     const body = await readBody(event);
     const { content } = body;
-    const messageId = event.context.params
+    const messageId = event.context.params?.id
   
     const user = event.context.session.user;
   
@@ -21,19 +21,6 @@ export default defineWrappedResponseHandler(async (event) => {
   
     try {
       const db = event.context.mysql;
-  
-      // Vérifiez si l'utilisateur est autorisé à modifier ce message
-      const [rows] = await db.execute(
-        `SELECT * FROM messages WHERE id = ? AND user_id = ?`,
-        [messageId, user.id]
-      );
-  
-      if (rows.length === 0) {
-        return {
-          status: 403,
-          message: "Vous n'êtes pas autorisé à modifier ce message.",
-        };
-      }
   
       // Mettez à jour le contenu du message
       await db.execute(
