@@ -7,12 +7,27 @@ export default defineWrappedResponseHandler(async (event) => {
       message: "L'ID du forum est requis.",
     };
   }
+
   try {
     const db = event.context.mysql;
     
     await db.execute("SET time_zone = '+02:00'");
+    
+    const [forumRows] = await db.execute(
+      `SELECT name FROM forums WHERE id = ?`,
+      [id]
+    );
 
-    const [rows] = await db.execute(
+    if (forumRows.length === 0) {
+      return {
+        status: 404,
+        message: "Forum non trouvé.",
+      };
+    }
+
+    const forumName = forumRows[0].name;
+    
+    const [sujets] = await db.execute(
       `SELECT 
          s.id, 
          s.title,
@@ -26,22 +41,21 @@ export default defineWrappedResponseHandler(async (event) => {
          ) AS last_message_date
        FROM sujets s
        LEFT JOIN users u ON s.user_id = u.id
-       LEFT JOIN forums f ON s.forum_id = f.id
+        LEFT JOIN forums f ON s.forum_id = f.id
        WHERE s.forum_id = ?
        ORDER BY last_message_date DESC`,
       [id]
     );
-    
 
     return {
       status: 200,
-      forum_name: rows[0]?.forum_name || null,
-      sujets: rows || [],
+      forum_name: forumName,
+      sujets: sujets || [],
     };
   } catch (error) {
     return {
       status: 500,
-      message: "Erreur serveur lors de la récupération des sujets:"
+      message: "Erreur serveur lors de la récupération des sujets.",
     };
   }
 });

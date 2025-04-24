@@ -1,5 +1,5 @@
 export default defineWrappedResponseHandler(async (event) => {
-    const messageId = event.context.params;
+    const messageId = event.context.params?.id;
     const user = event.context.session.user;
   
     if (!user) {
@@ -18,21 +18,7 @@ export default defineWrappedResponseHandler(async (event) => {
   
     try {
       const db = event.context.mysql;
-  
-      // Vérifie si l'utilisateur est autorisé à supprimer ce message
-      const [rows] = await db.execute(
-        `SELECT * FROM messages WHERE id = ? AND user_id = ?`,
-        [messageId, user.id]
-      );
-  
-      if (rows.length === 0) {
-        return {
-          status: 403,
-          message: "Vous n'êtes pas autorisé à supprimer ce message.",
-        };
-      }
-  
-      // Supprimer le message
+
       await db.execute(`DELETE FROM messages WHERE id = ?`, [messageId]);
   
       return {
@@ -42,7 +28,7 @@ export default defineWrappedResponseHandler(async (event) => {
     } catch (error) {
       return {
         status: 500,
-        message: "Erreur serveur lors de la suppression du message.",
+        message: "Erreur serveur lors de la suppression du message."
       };
     }
   });

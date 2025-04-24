@@ -10,15 +10,15 @@ await forumStore.fetchForums()
 <template>
   <div class="min-h-screen bg-[#1a1a1b] py-8 px-4">
     <!-- Loader de chargement -->
-    <Loader :isLoading="forumStore.isLoading && !forumStore.hasError" message="Chargement des forums..." />
+    <Loader v-if="forumStore.isLoading && !forumStore.hasError" message="Chargement des forums..." />
 
     <!-- Message d'erreur -->
-    <div v-if="forumStore.hasError" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+    <div v-else-if="forumStore.hasError" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
       {{ forumStore.error }}
     </div>
 
     <!--Page principale-->
-    <div v-if="forumStore.getForums.length > 0 && !forumStore.isLoading && !forumStore.hasError" class="space-y-6">
+    <div v-else="forumStore.getForums.length > 0 && !forumStore.isLoading && !forumStore.hasError" class="space-y-6">
       <h1 class="text-3xl md:text-4xl font-bold text-white text-center mb-6">Bienvenue sur Raiedit</h1>
 
       <!-- Liste des forums -->
@@ -38,12 +38,6 @@ await forumStore.fetchForums()
         </p>
       </NuxtLink>
 
-    </div>
-
-    <!-- Message si aucun forum n'est trouvé -->
-    <div v-else-if="!forumStore.isLoading" class="max-w-3xl mx-auto text-center mt-10">
-      <h1 class="text-3xl md:text-4xl font-bold text-white">Aucun forum trouvé</h1>
-      <p class="text-gray-400 mt-2">Il n'y a pas de forums disponibles pour le moment.</p>
     </div>
   </div>
 </template>

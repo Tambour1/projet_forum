@@ -17,7 +17,7 @@ const { data, pending } = useAsyncData('forum-sujets', () =>
 
 const errorMessage = computed(() => {
   if (!data.value) return '';
-  if (data.value.status === 400 || data.value.status === 500) {
+  if (data.value.status === 400 || data.value.status === 500 || data.value.status === 404) {
     return data.value.message;
   }
   return '';

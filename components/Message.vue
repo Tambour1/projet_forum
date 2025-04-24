@@ -18,6 +18,9 @@ const props = defineProps<{
 const showEdit = ref(false)
 const editedMessage = ref('')
 const showDeleteModal = ref(false)
+const statusMessage = ref('')
+const statusType = ref<'success' | 'error' | ''>('')
+
 
 const cancelEdit = () => {
   showEdit.value = false
@@ -39,13 +42,21 @@ const editMessage = async () => {
     const result = await response.json();
 
     if (!response.ok) {
-      throw new Error(result.message || 'Erreur lors de la mise à jour');
+      statusType.value = 'error'
+      statusMessage.value = result.message || 'Erreur lors de la mise à jour'
+      return;
     }
+
+    statusType.value = 'success'
+    statusMessage.value = result.message || 'Message mis à jour avec succès'
     showEdit.value = false;
+
   } catch (error) {
-    console.error('Erreur lors de la sauvegarde du message :', error);
+    statusType.value = 'error'
+    statusMessage.value = 'Erreur lors de la sauvegarde du message'
   }
 };
+
 
 const deleteMessage = async () => {
   try {
@@ -56,15 +67,21 @@ const deleteMessage = async () => {
     const result = await response.json();
 
     if (!response.ok) {
-      throw new Error(result.message || 'Erreur lors de la suppression');
+      statusType.value = 'error'
+      statusMessage.value = result.message || 'Erreur lors de la suppression'
+      return
     }
 
-    showDeleteModal.value = false;
+    statusType.value = 'success'
+    statusMessage.value = result.message || 'Message supprimé avec succès'
+    showDeleteModal.value = false
 
   } catch (error) {
-    console.error('Erreur lors de la suppression du message :', error);
+    statusType.value = 'error'
+    statusMessage.value = 'Erreur serveur lors de la suppression'
   }
-};
+}
+
 
 </script>
 
@@ -86,14 +103,12 @@ const deleteMessage = async () => {
     <!-- Deux boutons-->
     <div class="flex justify-end items-center gap-2 mt-4"
       v-if="!showEdit && (message.author === userStore.currentUser?.username || userStore.currentUser?.role === 'admin')">
-      <button
-        class="flex items-center text-sm text-gray-400 rounded-full px-4 py-2 hover:bg-gray-500 hover:text-white"
+      <button class="flex items-center text-sm text-gray-400 rounded-full px-4 py-2 hover:bg-gray-500 hover:text-white"
         @click="showEdit = true">
         <PencilIcon class="h-5 w-5 mr-2" />
         Modifier
       </button>
-      <button
-        class="flex items-center text-sm text-gray-400 rounded-full px-4 py-2 hover:bg-red-500 hover:text-white"
+      <button class="flex items-center text-sm text-gray-400 rounded-full px-4 py-2 hover:bg-red-500 hover:text-white"
         @click="showDeleteModal = true">
         <TrashIcon class="h-5 w-5 mr-2" />
         Supprimer
@@ -102,8 +117,8 @@ const deleteMessage = async () => {
 
     <!-- Modification d'un message -->
     <div v-if="showEdit" class="mt-4">
-      <textarea v-model="editedMessage" class="w-full p-3 rounded-md text-white resize-none focus:outline-none"
-        rows="3" placeholder="Modifier votre message..."></textarea>
+      <textarea v-model="editedMessage" class="w-full p-3 rounded-md text-white resize-none focus:outline-none" rows="3"
+        placeholder="Modifier votre message..."></textarea>
       <div class="mt-3 flex justify-end gap-2">
         <button class="px-4 py-2 rounded-full bg-gray-600 text-white hover:bg-gray-700" @click="cancelEdit">
           Annuler
@@ -113,10 +128,17 @@ const deleteMessage = async () => {
         </button>
       </div>
     </div>
+    <!-- Message de statut temporaire-->
+    <div v-if="statusMessage" :class="[
+      'mt-3 p-3 rounded-md text-sm',
+      statusType === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+    ]">
+      {{ statusMessage }}
+    </div>
+
 
     <!-- Modal de confirmation de suppression -->
-    <div v-if="showDeleteModal"
-      class="fixed inset-0 bg-gray-200 bg-opacity-40 flex items-center justify-center z-50">
+    <div v-if="showDeleteModal" class="fixed inset-0 bg-gray-200 bg-opacity-40 flex items-center justify-center z-50">
       <div class="bg-gray-900 p-6 sm:p-8 rounded-lg shadow-lg w-full sm:w-3/4 md:w-1/2 lg:w-1/3 xl:w-1/4">
         <h3 class="text-lg mb-4 text-white">Êtes-vous sûr de vouloir supprimer ce message ?</h3>
         <div class="flex justify-end gap-4">
