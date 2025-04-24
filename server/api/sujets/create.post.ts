@@ -27,12 +27,14 @@ export default defineWrappedResponseHandler(async (event) => {
       [content, forumId, title, user.id]
     );
 
-    return { message: "Sujet créé avec succès." };
+    return { 
+      status: 200,
+      message: "Sujet créé avec succès." 
+    };
   } catch (error) {
     return {
       status: 500,
       message: "Erreur serveur lors de la création du sujet.",
-      error: error.message,
     };
   }
 });

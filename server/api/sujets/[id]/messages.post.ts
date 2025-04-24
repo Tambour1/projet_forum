@@ -15,7 +15,7 @@ export default defineWrappedResponseHandler(async (event) => {
   if (!content || content.trim() === "") {
     return {
       status: 400,
-      message: "Le contenu du message est requis."
+      message: "Le contenu du message est requis.",
     };
   }
 
@@ -29,14 +29,13 @@ export default defineWrappedResponseHandler(async (event) => {
     );
 
     return {
-        success: true,
-        message: "Message ajouté avec succès.",
+      status: 200,
+      message: "Message ajouté avec succès.",
     };
   } catch (error) {
     return {
       status: 500,
       message: "Erreur serveur lors de la récupération des messages.",
-      error: error.message,
     };
   }
 });

@@ -1,24 +1,26 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router'
-import { ref } from 'vue'
-
-definePageMeta({
-  middleware: 'auth',
-});
+import { ref, onMounted } from 'vue'
+import { useUserStore } from '@/stores/user';
 
 const route = useRoute()
 const router = useRouter()
 const forumId = Number(route.params.id)
+const userStore = useUserStore();
 
 const title = ref('')
 const content = ref('')
 const isSubmitting = ref(false)
 const errorMessage = ref('')
 
-const submitForm = async () => { 
+onMounted(() => {
+  if (!userStore.isAuthenticated) {
+    router.push('/');
+  }
+});
 
+const submitForm = async () => {
   isSubmitting.value = true
-
   try {
     const response = await $fetch('/api/sujets/create', {
       method: 'POST',
@@ -28,48 +30,42 @@ const submitForm = async () => {
         forumId,
       },
     })
-    if (response.status) {
-        throw new Error('Erreur lors de la création du sujet' + response.message)
+
+    if (response.status === 400 || response.status === 500 || response.status === 401) {
+      errorMessage.value = response.message;
+    } else if (response.status === 200) {
+      errorMessage.value = '';
     }
 
-    
     setTimeout(() => {
       router.push(`/forums/${forumId}`)
     }, 1000)
 
-  } catch (error: any) {
-    errorMessage.value = error.message
   } finally {
     isSubmitting.value = false
   }
 }
-
 </script>
 
 <template>
-    <div class="min-h-screen bg-[#1a1a1b] py-10 px-4">
-        <div class="max-w-2xl mx-auto bg-white rounded-lg shadow p-6">
-            <h1 class="text-2xl font-bold mb-6 text-gray-800">Créer un nouveau sujet</h1>
-
-            <form @submit.prevent="submitForm" class="space-y-4">
-                <div>
-                    <label class="block text-gray-700 mb-1">Titre du sujet</label>
-                    <input v-model="title" type="text" class="w-full p-2 border border-gray-300 rounded" />
-                </div>
-
-                <div>
-                    <label class="block text-gray-700 mb-1">Premier message</label>
-                    <textarea v-model="content" rows="6"
-                        class="w-full p-2 border border-gray-300 rounded resize-none" />
-                </div>
-
-                <div v-if="errorMessage" class="text-red-600 text-sm">{{ errorMessage }}</div>
-
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-                    :disabled="isSubmitting">
-                    {{ isSubmitting ? 'En cours...' : 'Publier' }}
-                </button>
-            </form>
-        </div>
+  <div class="min-h-screen bg-[#1a1a1b]">
+    <div class="mx-36 my-12 p-6">
+      <h1 class="text-2xl font-bold mb-8 text-gray-300">Créer un nouveau sujet</h1>
+      <!--Formulaire-->
+      <form @submit.prevent="submitForm" class="space-y-8">
+        <input v-model="title" placeholder="Titre du sujet" type="text"
+          class="w-full text-white p-2 border-2 border-gray-400 border-solid rounded-lg resize-none focus:outline-none" />
+        <textarea v-model="content" rows="6" placeholder="Premier message du sujet"
+          class="w-full text-white p-2 border-2 border-gray-300 border-dashed rounded-lg resize-none focus:outline-none" />
+        <button type="submit" class="bg-pink-600 text-white px-4 py-2 rounded-full hover:bg-pink-700"
+          :disabled="isSubmitting">
+          {{ isSubmitting ? 'En cours...' : 'Publier' }}
+        </button>
+      </form>
+      <!-- Message d'erreur -->
+      <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-8">
+        {{ errorMessage }}
+      </div>
     </div>
+  </div>
 </template>

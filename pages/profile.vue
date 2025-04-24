@@ -1,40 +1,41 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useUserStore } from '@/stores/user';
 
-definePageMeta({
-  middleware: 'auth',
-});
-
-const { session, reset } = await useSession();
-const user = ref(null);
+const userStore = useUserStore();
 const router = useRouter();
 
 onMounted(() => {
-  if (session.value && session.value.user) {
-    user.value = session.value.user;
-  } else {
+  if (!userStore.isAuthenticated) {
     router.push('/');
   }
 });
 
-const logout = async () => {
-  await reset();
+const logout = () => {
+  userStore.logout();
   router.push('/');
 };
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-100 flex items-center justify-center">
-    <div v-if="user" class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-      <h1 class="text-2xl font-bold mb-4">Bienvenue, {{ user.username }}</h1>
-      <div class="mb-4">
-        <p class="text-gray-700"><strong>Role:</strong> {{ user.role }}</p>
+  <div v-if="userStore.isAuthenticated && userStore.currentUser" class="min-h-screen bg-[#1a1a1b] w-full">
+    <div class="flex items-center justify-between mx-56 mt-12 rounded border-2 border-gray-600 p-4 relative">
+      <div class="flex items-center">
+        <img src="/public/utilisateur.png" alt="User Avatar" class="w-20 h-20 rounded-full mr-4" />
+        <h1 class="text-2xl text-white font-bold relative">
+          {{ userStore.currentUser.username }}
+          <v-chip class="absolute top-0 right-16 transform translate-x-full -translate-y-1/2">
+            {{ userStore.currentUser.role }}
+          </v-chip>
+        </h1>
       </div>
-      <v-btn @click="logout" color="primary">Se déconnecter</v-btn>
-    </div>
-    <div v-else class="text-center">
-      <p>Chargement...</p>
+      <button @click="logout" class="bg-pink-600 text-white px-4 py-2 rounded-full hover:bg-pink-700">Se déconnecter</button>
     </div>
   </div>
+  <div v-else class="text-center min-h-screen bg-[#1a1a1b] w-full flex items-center justify-center">
+    <p class="text-red-500">Pour accéder à cette page, veuillez vous connecter.</p>
+  </div>
 </template>
+
+

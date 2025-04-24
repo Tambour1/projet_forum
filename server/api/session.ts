@@ -1,4 +1,8 @@
-export default eventHandler((event) => {
-    return { user: event.context.session.user || null }
-  })
-  
+export default defineEventHandler((event) => {
+  const session = event.context.session 
+  if (session?.user) {
+    return { user: session.user }
+  } else {
+    return { user: null }
+  }
+});

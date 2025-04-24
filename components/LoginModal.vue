@@ -1,10 +1,12 @@
 <script setup>
 import { ref } from 'vue';
+import { useUserStore } from '~/stores/user';
 
 const emit = defineEmits(['close']);
 
 const username = ref('');
 const password = ref('');
+const userStore = useUserStore()
 
 const loginUser = async () => {
     const response = await $fetch('/api/login', {
@@ -15,8 +17,13 @@ const loginUser = async () => {
     if (response.error) {
         alert(response.error);
     } else {
-        await refreshNuxtData(); 
-        emit('close');
+        const { user } = await $fetch('/api/auth/session')
+
+        if (user) {
+            userStore.login(user)
+        }
+
+        emit('close')
     }
 };
 </script>
@@ -40,10 +47,12 @@ const loginUser = async () => {
                     class="w-full px-4 py-3 border rounded-lg bg-gray-700" />
                 <p class="mt-4 text-sm text-center text-gray-200">
                     Première fois sur Raiedit ?
-                    <a @click="$emit('switch-to-register')" class="text-pink-600 hover:underline cursor-pointer">Inscrit-toi</a>
+                    <a @click="$emit('switch-to-register')"
+                        class="text-pink-600 hover:underline cursor-pointer">Inscrit-toi</a>
                 </p>
                 <v-divider :thickness="2"></v-divider>
-                <button type="submit" class="w-full bg-pink-600 text-white py-2 rounded-lg hover:bg-pink-700 transition">Se
+                <button type="submit"
+                    class="w-full bg-pink-600 text-white py-2 rounded-lg hover:bg-pink-700 transition">Se
                     connecter</button>
             </form>
         </div>

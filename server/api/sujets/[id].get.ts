@@ -33,12 +33,14 @@ export default defineWrappedResponseHandler(async (event) => {
       };
     }
 
-    return rows[0];
+    return {
+      status:200,
+      sujet: rows[0]
+    } 
   } catch (error) {
     return {
       status: 500,
       message: "Erreur serveur lors de la récupération du sujet.",
-      error: error.message,
     };
   }
 });

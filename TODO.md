@@ -1,7 +1,7 @@
 - [x] Requete API pour récupérer les messages d'un sujet
-- [ ] Ajouter la logique d'ajout d'un nouveau message
+- [x] Ajouter la logique d'ajout d'un nouveau message
 - [ ] Logique de modification d'un message
 - [ ] Logique de supression d'un message
 - [ ] Logique de suppression d'un sujet avec tous les messages associés
-- [ ] NuxtLink sur Sujet head pour etre redirigé vers le sujet
-- [ ] NuxtLink sur liste forum pour etre redirigé
+- [x] NuxtLink sur Sujet head pour etre redirigé vers le sujet
+- [x] NuxtLink sur liste forum pour etre redirigé

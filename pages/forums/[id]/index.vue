@@ -2,76 +2,84 @@
 import { useRoute, useRouter } from 'vue-router';
 import { ref, computed } from 'vue';
 import { PlusIcon } from '@heroicons/vue/24/solid';
+import { useUserStore } from '@/stores/user';
 
 const route = useRoute();
 const router = useRouter();
 const forumId = route.params.id;
+const userStore = useUserStore();
+
+const errorMessage = ref('');
+const isLoading = ref(true); 
 
 const modalType = ref<null | 'login' | 'register'>(null);
 
-const currentUser = ref({
-  id: 1,
-  username: 'user42',
-  role: 'admin',
+// const { data } = await useAsyncData('forum-sujets', () => {
+//   try {
+//     isLoading.value = true; 
+//     return $fetch(`/api/forums/${forumId}`);
+//   } finally {
+//     isLoading.value = false;
+//   }
+// }
+// );
+
+const { data } = await useAsyncData('forum-sujets', async () => {
+  try {
+    isLoading.value = true;
+    const response = await Promise.resolve({
+      status: 200,
+      message: 'Erreur blabla',
+      forum_name: 'Programmation Web',
+      sujets: [
+        {
+          id: 1,
+          title: 'Comment débuter avec Vue 3 ?',
+          author: 'devstarter',
+          forum_name: 'Programmation Web',
+          created_at: '2024-04-20 10:30:00'
+        },
+        {
+          id: 2,
+          title: 'Typescript ou JavaScript ?',
+          author: 'jsfanboy',
+          forum_name: 'Programmation Web',
+          created_at: '2024-04-21 16:45:00'
+        },
+        {
+          id: 3,
+          title: 'Frameworks CSS : Tailwind vs Bootstrap',
+          author: 'designersoul',
+          forum_name: 'Programmation Web',
+          created_at: '2024-04-22 08:15:00'
+        }
+      ]
+    });
+    return response;
+  } finally {
+    isLoading.value = false; 
+  }
 });
 
-const handleNewSujetClick = async () => {
-  const { session } = await useSession();
+if (data.value?.status === 400 || data.value?.status === 500) {
+  errorMessage.value = data.value.message;
+} else if (data.value?.status === 200) {
+  errorMessage.value = '';
+}
 
-  if (!session.value?.user) {
+const sujets = computed(() => data.value?.sujets || []);
+
+const openNewSujet = () => {
+  if (!userStore.isAuthenticated) {
     modalType.value = 'login';
   } else {
     router.push(`/forums/${forumId}/new`);
   }
 };
-
-// const { data, error } = await useAsyncData('forum-sujets', () =>
-//   $fetch(`/api/forums/${forumId}`)
-// );
-
-// Simuler la réponse API
-const { data, error } = await useAsyncData('forum-sujets', () =>
-  Promise.resolve({
-    forum_name: 'Programmation Web',
-    sujets: [
-      {
-        id: 1,
-        title: 'Comment débuter avec Vue 3 ?',
-        author: 'devstarter',
-        forum_name: 'Programmation Web',
-        created_at: '2024-04-20 10:30:00'
-      },
-      {
-        id: 2,
-        title: 'Typescript ou JavaScript ?',
-        author: 'jsfanboy',
-        forum_name: 'Programmation Web',
-        created_at: '2024-04-21 16:45:00'
-      },
-      {
-        id: 3,
-        title: 'Frameworks CSS : Tailwind vs Bootstrap',
-        author: 'designersoul',
-        forum_name: 'Programmation Web',
-        created_at: '2024-04-22 08:15:00'
-      }
-    ]
-  })
-);
-
-const sujets = computed(() => data.value?.sujets || []);
-const errorMessage = ref('');
 </script>
-
 
 <template>
   <div class="min-h-screen bg-[#1a1a1b] py-8 px-4">
-
-    <!-- Message d'erreur -->
-    <div v-if="errorMessage" class="bg-red-100 text-red-700 p-4 rounded mb-4">
-      {{ errorMessage }}
-    </div>
-
     <!-- En-tête -->
     <div class="relative mb-24">
       <div class="w-full h-[150px] md:h-[182px] bg-center bg-cover rounded-lg"
@@ -90,7 +98,7 @@ const errorMessage = ref('');
         <!-- Bouton -->
         <div
           class="border-2 border-gray-400 text-white hover:border-gray-300 px-4 py-2 rounded-xl mt-13 absolute right-6">
-          <button @click="handleNewSujetClick" class="flex items-center gap-2">
+          <button @click="openNewSujet" class="flex items-center gap-2">
             <PlusIcon class="h-5 w-5 text-white" />
             Nouveau sujet
           </button>
@@ -98,12 +106,16 @@ const errorMessage = ref('');
       </div>
     </div>
 
-    <!-- Liste des sujets -->
-    <div v-if="sujets.length > 0">
-      <SujetHead v-for="sujet in sujets" :key="sujet.id" :sujet="sujet" :currentUser="currentUser" />
+    <Loader :isLoading="isLoading && !errorMessage" message="Chargement des sujets..." />
+
+    <!-- Message d'erreur -->
+    <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+      {{ errorMessage }}
     </div>
-    <div v-else class="text-center text-gray-500 pt-20">
-      Aucun sujet trouvé pour ce forum.
+
+    <!-- Liste des sujets -->
+    <div v-if="sujets.length > 0 && !isLoading && !errorMessage">
+      <SujetHead v-for="sujet in sujets" :key="sujet.id" :sujet="sujet" :isLinkEnabled="true"/>
     </div>
 
     <!-- Modales -->

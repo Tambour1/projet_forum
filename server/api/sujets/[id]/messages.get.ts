@@ -25,13 +25,13 @@ export default defineWrappedResponseHandler(async (event) => {
       );
   
       return {
+        status: 200,
         messages: rows,
       };
     } catch (error) {
       return {
         status: 500,
         message: "Erreur serveur lors de la récupération des messages.",
-        error: error.message,
       };
     }
   });

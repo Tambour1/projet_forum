@@ -20,14 +20,14 @@ export default defineWrappedResponseHandler(async (event) => {
     );
 
     return {
+      status: 200,
       forum_name: rows[0]?.forum_name || null,
       sujets: rows || [],
     };
   } catch (error) {
     return {
       status: 500,
-      message: "Erreur serveur lors de la récupération des sujets:",
-      error: error.message,
+      message: "Erreur serveur lors de la récupération des sujets:"
     };
   }
 });
