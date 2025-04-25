@@ -4,9 +4,15 @@ import LoginModal from '~/components/LoginModal.vue';
 import RegisterModal from '~/components/RegisterModal.vue';
 import Navside from '~/components/Navside.vue';
 import { useUserStore } from '~/stores/user'
+import { useNotificationStore } from '~/stores/notification';
 
 const modalType = ref(null);
 const userStore = useUserStore()
+const notificationStore = useNotificationStore();
+
+setTimeout(() => {
+  notificationStore.showNotification('Bienvenue sur Raiedit!', 'success');
+}, 2000);
 </script>
 
 <template>
@@ -44,6 +50,7 @@ const userStore = useUserStore()
       <!-- Affichage conditionnel des modales -->
       <LoginModal v-if="modalType === 'login'" @close="modalType = null" @switch-to-register="modalType = 'register'" />
       <RegisterModal v-if="modalType === 'register'" @close="modalType = null" @switch-to-login="modalType = 'login'" />
+      <Notification />
     </div>
   </NuxtLayout>
 </template>
