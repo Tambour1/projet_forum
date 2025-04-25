@@ -9,7 +9,7 @@ import { useUserStore } from '@/stores/user';
 const userStore = useUserStore();
 const router = useRouter();
 
-defineProps<{
+const props = defineProps<{
   sujet: {
     id: number
     author: string
@@ -24,10 +24,24 @@ defineProps<{
 }>()
 
 const showDeleteModal = ref(false)
-function handleDeleteSubject() {
-  console.log("Sujet supprimé")
-  showDeleteModal.value = false
+const deleteSujet = async () => {
+  try {
+    const response = await fetch(`/api/sujets/${props.sujet.id}`, {
+      method: 'DELETE',
+    });
+
+    if (response.status === 400 || response.status === 500) {
+      //Notifie
+    } else if (response.status === 200) {
+      //Notifie temporaire
+    }  
+  } finally {
+    alert(`Sujet supprimé`);
+    showDeleteModal.value = false
+  }
 }
+
+
 </script>
 
 <template>
@@ -76,7 +90,7 @@ function handleDeleteSubject() {
             <button class="px-4 py-2 bg-gray-600 text-white rounded-full" @click="showDeleteModal = false">
               Annuler
             </button>
-            <button class="px-4 py-2 bg-red-600 text-white rounded-full" @click="handleDeleteSubject">
+            <button class="px-4 py-2 bg-red-600 text-white rounded-full" @click="deleteSujet">
               Supprimer
             </button>
           </div>

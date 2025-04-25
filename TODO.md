@@ -1,6 +1,8 @@
 - [ ] Regarder la session avec le NuxtTools pour voir si il y a besoin de refaire une route session
-- [ ] Notification pour tous les messages d'erreur et de succès
+- [x] Notification pour tous les messages d'erreur et de succès
 - [ ] websocket
-- [ ] Logique de suppression d'un sujet avec tous les messages associés
+- [x] Logique de suppression d'un sujet avec tous les messages associés
+- [x] Supprimer un forum supprime les sujets et message associés
 - [x] Espace admin avec creation/renommage/supression de forum
 - [ ] Tester l'espace admin creation/modification/supression
+- [ ] Test supression sujet
