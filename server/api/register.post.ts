@@ -12,7 +12,7 @@ export default defineWrappedResponseHandler(async (event) => {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const [result] = await db.execute(
+  await db.execute(
     'INSERT INTO users (username, password) VALUES (?, ?)',
     [username, hashedPassword]
   );

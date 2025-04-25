@@ -2,4 +2,5 @@
 - [ ] Notification pour tous les messages d'erreur et de succès
 - [ ] websocket
 - [ ] Logique de suppression d'un sujet avec tous les messages associés
-- [ ] Espace admin avec creation/renommage/supression de forum
+- [x] Espace admin avec creation/renommage/supression de forum
+- [ ] Tester l'espace admin creation/modification/supression

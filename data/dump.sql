@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     role ENUM('user', 'admin') NOT NULL DEFAULT 'user',
-    avatar VARCHAR(255) DEFAULT NULL
 );
 
 -- Création de la table forums

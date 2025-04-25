@@ -1,6 +1,6 @@
 export default defineWrappedResponseHandler(async (event) => {
   const body = await readBody(event);
-  const { title, content, forumId } = body;
+  const { name, description } = body;
 
   const user = event.context.session.user;
 
@@ -11,31 +11,29 @@ export default defineWrappedResponseHandler(async (event) => {
     };
   }
 
-  if (!title || !content || !forumId) {
+  if (!name || !description) {
     return {
       status: 400,
-      message: "Tous les champs sont requis.",
+      message: "Nom et description du forum sont requis.",
     };
   }
 
   try {
     const db = event.context.mysql;
-    const isoDate = new Date().toISOString(); 
 
     await db.execute(
-      `INSERT INTO sujets (content, forum_id, title, user_id, created_at)
-         VALUES (?, ?, ?, ?, ?)`,
-      [content, forumId, title, user.id, isoDate]
+      `INSERT INTO forums (name, description) VALUES (?, ?)`,
+      [name, description]
     );
 
-    return { 
+    return {
       status: 201,
-      message: "Sujet créé avec succès." 
+      message: "Forum créé avec succès.",
     };
   } catch (error) {
     return {
       status: 500,
-      message: "Erreur serveur lors de la création du sujet.",
+      message: "Erreur serveur lors de la création du forum.",
     };
   }
 });

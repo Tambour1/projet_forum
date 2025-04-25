@@ -33,7 +33,7 @@ const submitForm = async () => {
 
     if (response.status === 400 || response.status === 500 || response.status === 401) {
       errorMessage.value = response.message;
-    } else if (response.status === 200) {
+    } else if (response.status === 201) {
       errorMessage.value = '';
     }
 
@@ -62,7 +62,7 @@ const submitForm = async () => {
           {{ isSubmitting ? 'En cours...' : 'Publier' }}
         </button>
       </form>
-      <!-- Message d'erreur -->
+      <!-- Message temporaire -->
       <div v-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-8">
         {{ errorMessage }}
       </div>

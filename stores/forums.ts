@@ -8,27 +8,46 @@ export const useForumStore = defineStore('forums', {
   }),
 
   actions: {
+    // async fetchForums() {
+    //   this.loading = true
+    //   this.error = null
+
+    //   try {
+    //     const { data, error } = await useAsyncData('forums', () => $fetch('/api/forums'))
+
+
+    //     if (error.value) {
+    //       this.error = "Erreur lors de la récupération des forums."
+    //     } else if (!Array.isArray(data.value?.forums)) {
+    //       this.error = "Format de réponse invalide."
+    //     } else {
+    //       this.forums = data.value.forums
+    //     }
+    //   } catch (err) {
+    //     this.error = "Une erreur inattendue est survenue."
+    //   } finally {
+    //     this.loading = false
+    //   }
+    // },
+
     async fetchForums() {
       this.loading = true
       this.error = null
-
+    
       try {
-        const { data, error } = await useAsyncData('forums', () => $fetch('/api/forums'))
-
-
-        if (error.value) {
-          this.error = "Erreur lors de la récupération des forums."
-        } else if (!Array.isArray(data.value?.forums)) {
-          this.error = "Format de réponse invalide."
-        } else {
-          this.forums = data.value.forums
-        }
+        // Forums fictifs simulés
+        this.forums = [
+          { id: '1', name: 'Forum Général' },
+          { id: '2', name: 'Forum Développement Web' },
+          { id: '3', name: 'Forum Jeux Vidéo' },
+        ]
       } catch (err) {
         this.error = "Une erreur inattendue est survenue."
       } finally {
         this.loading = false
       }
-    },
+    }
+    
   },
 
   getters: {

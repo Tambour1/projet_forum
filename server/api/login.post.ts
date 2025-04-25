@@ -27,8 +27,7 @@ export default defineWrappedResponseHandler(async (event) => {
   event.context.session.user = {
     id: user.id,
     username: user.username,
-    role: user.role,
-    avatar: user.avatar
+    role: user.role
   }  
 
   return { message: "Connexion réussie" };

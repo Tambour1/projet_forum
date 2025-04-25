@@ -39,18 +39,14 @@ const editMessage = async () => {
       }),
     });
 
-    const result = await response.json();
-
-    if (!response.ok) {
+    if (response.status === 400 || response.status === 500 || response.status === 401) {
       statusType.value = 'error'
-      statusMessage.value = result.message || 'Erreur lors de la mise à jour'
-      return;
-    }
-
-    statusType.value = 'success'
-    statusMessage.value = result.message || 'Message mis à jour avec succès'
-    showEdit.value = false;
-
+      statusMessage.value = response.message
+    } else if (response.status === 200) {
+      statusType.value = 'success'
+      statusMessage.value = response.message 
+      showEdit.value = false;
+    }   
   } catch (error) {
     statusType.value = 'error'
     statusMessage.value = 'Erreur lors de la sauvegarde du message'
@@ -64,25 +60,19 @@ const deleteMessage = async () => {
       method: 'DELETE',
     });
 
-    const result = await response.json();
-
-    if (!response.ok) {
+    if (response.status === 400 || response.status === 500 || response.status === 401) {
       statusType.value = 'error'
-      statusMessage.value = result.message || 'Erreur lors de la suppression'
-      return
-    }
-
-    statusType.value = 'success'
-    statusMessage.value = result.message || 'Message supprimé avec succès'
-    showDeleteModal.value = false
-
+      statusMessage.value = response.message
+    } else if (response.status === 200) {
+      statusType.value = 'success'
+      statusMessage.value = response.message 
+      showDeleteModal.value = false
+    }  
   } catch (error) {
     statusType.value = 'error'
     statusMessage.value = 'Erreur serveur lors de la suppression'
   }
 }
-
-
 </script>
 
 <template>

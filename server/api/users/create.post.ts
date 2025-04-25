@@ -1,6 +1,7 @@
+import bcrypt from 'bcryptjs';
 export default defineWrappedResponseHandler(async (event) => {
   const body = await readBody(event);
-  const { title, content, forumId } = body;
+  const { username, password } = body;
 
   const user = event.context.session.user;
 
@@ -11,31 +12,31 @@ export default defineWrappedResponseHandler(async (event) => {
     };
   }
 
-  if (!title || !content || !forumId) {
+  if (!username || !password) {
     return {
       status: 400,
-      message: "Tous les champs sont requis.",
+      message: "username et password requis",
     };
   }
 
   try {
     const db = event.context.mysql;
-    const isoDate = new Date().toISOString(); 
+
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     await db.execute(
-      `INSERT INTO sujets (content, forum_id, title, user_id, created_at)
-         VALUES (?, ?, ?, ?, ?)`,
-      [content, forumId, title, user.id, isoDate]
+      'INSERT INTO users (username, password, role) VALUES (?, ?, ?)',
+      [username, hashedPassword, 'admin']
     );
 
-    return { 
+    return {
       status: 201,
-      message: "Sujet créé avec succès." 
+      message: "Admin créé avec succès.",
     };
   } catch (error) {
     return {
       status: 500,
-      message: "Erreur serveur lors de la création du sujet.",
+      message: "Erreur serveur lors de la création de l'admin.",
     };
   }
 });
