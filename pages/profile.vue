@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
@@ -44,10 +44,13 @@ const createForum = async () => {
   try {
     const response = await $fetch('/api/forums/create', {
       method: 'POST',
-      body: {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         name: newForum.value.name,
         description: newForum.value.description,
-      },
+      }),
     })
 
     if (response.status === 400 || response.status === 500 || response.status === 401) {
@@ -65,23 +68,29 @@ const renameForum = async () => {
   try {
     const response = await fetch(`/api/forums/${renameForumId.value}`, {
       method: 'PUT',
-      body: {
-        name: renameForumName.value,
+      headers: {
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+        name: renameForumName.value,
+      }),
     });
+
+    const data = await response.json();
 
     if (response.status === 400 || response.status === 500 || response.status === 401) {
       statusType.value = 'error'
-      statusMessage.value = response.message
+      statusMessage.value = data.message
     } else if (response.status === 200) {
       statusType.value = 'success'
-      statusMessage.value = response.message 
-    }  
+      statusMessage.value = data.message
+    }
   } finally {
-    renameForumName.value = ''
     alert(`Renommage forum ID ${renameForumId.value} -> ${renameForumName.value}`);
+    renameForumName.value = ''
   }
 };
+
 
 const deleteForum = async () => {
   try {
