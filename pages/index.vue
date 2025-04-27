@@ -9,6 +9,7 @@ await forumStore.fetchForums()
 
 <template>
   <div class="min-h-screen bg-[#1a1a1b] py-8 px-4">
+    <h1 class="text-3xl md:text-4xl font-bold text-white text-center mb-6">Bienvenue sur Raiedit</h1>
     <!-- Loader de chargement -->
     <Loader v-if="forumStore.isLoading && !forumStore.hasError" message="Chargement des forums..." />
 
@@ -18,8 +19,7 @@ await forumStore.fetchForums()
     </div>
 
     <!--Page principale-->
-    <div v-else="forumStore.getForums.length > 0 && !forumStore.isLoading && !forumStore.hasError" class="space-y-6">
-      <h1 class="text-3xl md:text-4xl font-bold text-white text-center mb-6">Bienvenue sur Raiedit</h1>
+    <div v-else-if="forumStore.getForums.length > 0 && !forumStore.isLoading && !forumStore.hasError" class="space-y-6">      
 
       <!-- Liste des forums -->
       <NuxtLink v-for="forum in forumStore.getForums" :key="forum.id" :to="`/forums/${forum.id}`"
@@ -39,5 +39,9 @@ await forumStore.fetchForums()
       </NuxtLink>
 
     </div>
+    <!-- Message si aucun forum n'est trouvé -->
+    <div v-else class="italic text-gray-500 text-center">
+      Aucun forum trouvé.
+      </div>
   </div>
 </template>
