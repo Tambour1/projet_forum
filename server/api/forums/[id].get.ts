@@ -33,6 +33,7 @@ export default defineWrappedResponseHandler(async (event) => {
          s.title,
          s.created_at, 
          u.username AS author,
+         f.id AS forum_id,
          f.name AS forum_name,
          (
            SELECT MAX(m.created_at)

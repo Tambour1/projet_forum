@@ -9,10 +9,6 @@ import { useNotificationStore } from '~/stores/notification';
 const modalType = ref(null);
 const userStore = useUserStore()
 const notificationStore = useNotificationStore();
-
-setTimeout(() => {
-  notificationStore.showNotification('Bienvenue sur Raiedit!', 'success');
-}, 2000);
 </script>
 
 <template>

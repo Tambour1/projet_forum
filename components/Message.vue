@@ -3,8 +3,10 @@ import { ref } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { timeSince } from '../mixins/utils'
 import { PencilIcon, TrashIcon } from '@heroicons/vue/24/solid'
+import { useNotificationStore } from '@/stores/notification';
 
 const userStore = useUserStore()
+const notificationStore = useNotificationStore();
 
 const props = defineProps<{
   message: {
@@ -18,9 +20,6 @@ const props = defineProps<{
 const showEdit = ref(false)
 const editedMessage = ref('')
 const showDeleteModal = ref(false)
-const statusMessage = ref('')
-const statusType = ref<'success' | 'error' | ''>('')
-
 
 const cancelEdit = () => {
   showEdit.value = false
@@ -39,17 +38,16 @@ const editMessage = async () => {
       }),
     });
 
-    if (response.status === 400 || response.status === 500 || response.status === 401) {
-      statusType.value = 'error'
-      statusMessage.value = response.message
-    } else if (response.status === 200) {
-      statusType.value = 'success'
-      statusMessage.value = response.message 
+    const data = await response.json();
+
+    if (data.status === 400 || data.status === 500 || data.status === 401) {
+      notificationStore.showNotification(data.message, 'error');
+    } else if (data.status === 200) {
+      notificationStore.showNotification(data.message, 'success');
       showEdit.value = false;
     }   
   } catch (error) {
-    statusType.value = 'error'
-    statusMessage.value = 'Erreur lors de la sauvegarde du message'
+    notificationStore.showNotification('Erreur serveur lors de la sauvegarde du message.', 'error');
   }
 };
 
@@ -60,17 +58,16 @@ const deleteMessage = async () => {
       method: 'DELETE',
     });
 
-    if (response.status === 400 || response.status === 500 || response.status === 401) {
-      statusType.value = 'error'
-      statusMessage.value = response.message
-    } else if (response.status === 200) {
-      statusType.value = 'success'
-      statusMessage.value = response.message 
+    const data = await response.json();
+
+    if (data.status === 400 || data.status === 500 || data.status === 401) {
+      notificationStore.showNotification(data.message, 'error');
+    } else if (data.status === 200) {
+      notificationStore.showNotification(data.message, 'success');
       showDeleteModal.value = false
     }  
   } catch (error) {
-    statusType.value = 'error'
-    statusMessage.value = 'Erreur serveur lors de la suppression'
+    notificationStore.showNotification('Erreur serveur lors de la supression du message.', 'error');
   }
 }
 </script>
@@ -108,7 +105,7 @@ const deleteMessage = async () => {
     <!-- Modification d'un message -->
     <div v-if="showEdit" class="mt-4">
       <textarea v-model="editedMessage" class="w-full p-3 rounded-md text-white resize-none focus:outline-none" rows="3"
-        placeholder="Modifier votre message..."></textarea>
+        placeholder="Modifier votre message..." required></textarea>
       <div class="mt-3 flex justify-end gap-2">
         <button class="px-4 py-2 rounded-full bg-gray-600 text-white hover:bg-gray-700" @click="cancelEdit">
           Annuler
@@ -118,14 +115,6 @@ const deleteMessage = async () => {
         </button>
       </div>
     </div>
-    <!-- Message de statut temporaire-->
-    <div v-if="statusMessage" :class="[
-      'mt-3 p-3 rounded-md text-sm',
-      statusType === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
-    ]">
-      {{ statusMessage }}
-    </div>
-
 
     <!-- Modal de confirmation de suppression -->
     <div v-if="showDeleteModal" class="fixed inset-0 bg-gray-200 bg-opacity-40 flex items-center justify-center z-50">

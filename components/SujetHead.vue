@@ -5,8 +5,10 @@ import { NuxtLink } from '#components'
 import { ChevronLeftIcon, TrashIcon } from '@heroicons/vue/24/solid'
 import { timeSince } from '../mixins/utils'
 import { useUserStore } from '@/stores/user';
+import { useNotificationStore } from '~/stores/notification';
 
 const userStore = useUserStore();
+const notificationStore = useNotificationStore();
 const router = useRouter();
 
 const props = defineProps<{
@@ -14,6 +16,7 @@ const props = defineProps<{
     id: number
     author: string
     created_at: string
+    forum_id: number
     forum_name: string
     title: string
     content?: string
@@ -30,13 +33,19 @@ const deleteSujet = async () => {
       method: 'DELETE',
     });
 
-    if (response.status === 400 || response.status === 500) {
-      //Notifie
-    } else if (response.status === 200) {
-      //Notifie temporaire
+    const data = await response.json();
+    
+    if (data.status === 400 || data.status === 500) {
+      notificationStore.showNotification(data.message, 'error');
+    } else if (data.status === 200) {
+      notificationStore.showNotification(data.message, 'success');
     }
   } finally {
-    router.back();
+    if(props.withDescription) {
+      router.back();
+    } else {
+      router.push(`/forums/${props.sujet.forum_id}`);
+    }
     showDeleteModal.value = false
   }
 }
@@ -71,7 +80,6 @@ const deleteSujet = async () => {
   </div>
 
   <div class="flex items-center justify-between space-x-4">
-    <!-- Le titre devient cliquable uniquement -->
     <NuxtLink 
       v-if="isLinkEnabled"
       :to="`/sujets/${sujet.id}`" 
@@ -83,7 +91,6 @@ const deleteSujet = async () => {
       {{ sujet.title }}
     </h2>
 
-    <!-- Le bouton delete est bien séparé -->
     <button v-if="userStore.currentUser?.role === 'admin'" @click="showDeleteModal = true"
       class="hover:bg-red-600 text-white p-2 rounded-full">
       <component :is="TrashIcon" class="w-6 h-6 text-white" />

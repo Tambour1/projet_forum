@@ -1,12 +1,15 @@
 <script setup>
 import { ref } from 'vue';
 import { useUserStore } from '~/stores/user';
+import { useNotificationStore } from '~/stores/notification';
 
 const emit = defineEmits(['close']);
 
 const username = ref('');
 const password = ref('');
 const userStore = useUserStore()
+const notificationStore = useNotificationStore();
+
 
 const loginUser = async () => {
     const response = await $fetch('/api/login', {
@@ -15,14 +18,14 @@ const loginUser = async () => {
     });
 
     if (response.error) {
-        alert(response.error);
+        notificationStore.showNotification(response.error, 'error');
     } else {
         const { user } = await $fetch('/api/session')
 
         if (user) {
-            userStore.login(user)
+            userStore.login(user);
+            notificationStore.showNotification(response.message, 'success');
         }
-
         emit('close')
     }
 };

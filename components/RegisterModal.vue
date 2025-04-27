@@ -1,8 +1,9 @@
 <script setup>
 import { ref } from 'vue';
+import { useNotificationStore } from '~/stores/notification';
 
 const emit = defineEmits(['close', 'switch-to-login']);
-
+const notificationStore = useNotificationStore();
 const username = ref('');
 const password = ref('');
 
@@ -13,8 +14,9 @@ const register = async () => {
     });
 
     if (response.error) {
-        alert(response.error);
+        notificationStore.showNotification(response.error, 'error');
     } else {
+        notificationStore.showNotification(response.message, 'success');
         emit('switch-to-login');
     }
 };

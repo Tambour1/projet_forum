@@ -3,11 +3,13 @@ import { useRoute, useRouter } from 'vue-router';
 import { ref, computed } from 'vue';
 import { PlusIcon } from '@heroicons/vue/24/solid';
 import { useUserStore } from '@/stores/user';
+import { useNotificationStore } from '@/stores/notification';
 
 const route = useRoute();
 const router = useRouter();
 const forumId = route.params.id;
 const userStore = useUserStore();
+const notificationStore = useNotificationStore();
 
 const modalType = ref<null | 'login' | 'register'>(null);
 
@@ -15,20 +17,20 @@ const { data, pending } = useAsyncData('forum-sujets', () =>
   $fetch(`/api/forums/${forumId}`)
 );
 
-const errorMessage = computed(() => {
-  if (!data.value) return '';
-  if (data.value.status === 400 || data.value.status === 500 || data.value.status === 404) {
-    return data.value.message;
-  }
-  return '';
-});
-
 const sujets = computed(() => {
   return data.value?.status === 200 ? data.value?.sujets : [];
 });
 
 const forumName = computed(() => {
   return data.value?.status === 200 ? data.value?.forum_name : '';
+});
+
+watch(data, (newData) => {
+  if (!newData) return;
+
+  if (newData.status === 400 || newData.status === 404 || newData.status === 500) {
+    notificationStore.showNotification(newData.message, 'error');
+  }
 });
 
 const openNewSujet = () => {
@@ -68,18 +70,15 @@ const openNewSujet = () => {
       </div>
     </div>
 
-    <Loader v-if="pending && !errorMessage" message="Chargement des sujets..." />
+    <Loader v-if="pending" message="Chargement des sujets..." />
 
-    <div v-else-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-      {{ errorMessage }}
-    </div>
-
+    <!-- Liste des sujets -->
     <div v-else-if="sujets.length > 0">
       <SujetHead v-for="sujet in sujets" :key="sujet.id" :sujet="sujet" :isLinkEnabled="true" />
     </div>
 
     <div v-else class="text-center text-gray-400 mt-8">
-      Aucun sujet trouvé dans ce forum.
+      Aucun sujet dans ce forum.
     </div>
 
     <!-- Modales -->

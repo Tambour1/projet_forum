@@ -2,81 +2,76 @@
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { useNotificationStore } from '@/stores/notification';
 
 const route = useRoute()
 const sujetId = route.params.id
 const showForm = ref(false)
 const newMessage = ref('')
 const modalType = ref<null | 'login' | 'register'>(null)
+
 const userStore = useUserStore()
-const responseMessage = ref('')
-const responseMessageType = ref<'success' | 'error' | ''>('')
-
-
+const notificationStore = useNotificationStore()
 
 const { data: sujetData, pending: pendingSujet } = useAsyncData(`sujet-${sujetId}`, () =>
   $fetch(`/api/sujets/${sujetId}`)
 );
 
-const errorSujet = computed(() => {
-  if (!sujetData.value) return '';
-  if (sujetData.value.status === 400 || sujetData.value.status === 500 || sujetData.value.status === 404) {
-    return sujetData.value.message;
-  }
-  return '';
-});
-
-const sujet = computed(() => {
-  return sujetData.value?.status === 200 ? sujetData.value?.sujet : {};
-});
-
 const { data: messageData, pending: pendingMessage } = useAsyncData(`sujet-${sujetId}-messages`, () =>
   $fetch(`/api/sujets/${sujetId}/messages`)
 );
 
-const errorMessage = computed(() => {
-  if (!messageData.value) return '';
-  if (messageData.value.status === 400 || messageData.value.status === 500) {
-    return messageData.value.message;
-  }
-  return '';
+const sujet = computed(() => {
+  return sujetData.value?.status === 200 ? sujetData.value?.sujet : {};
 });
 
 const messages = computed(() => {
   return messageData.value?.status === 200 ? messageData.value?.messages : [];
 });
 
+watch(sujetData, (newData) => {
+  if (!newData) return;
+
+  if (newData.status === 400 || newData.status === 404 || newData.status === 500) {
+    notificationStore.showNotification(newData.message, 'error');
+  }
+});
+
+watch(messageData, (newData) => {
+  if (!newData) return;
+
+  if (newData.status === 400 || newData.status === 500) {
+    notificationStore.showNotification(newData.message, 'error');
+  }
+});
+
 async function sendMessage() {
   if (!newMessage.value.trim()) return
 
   try {
-    const response = await $fetch(`/api/sujets/${sujetId}/messages`, {
+    const response = await fetch(`/api/sujets/${sujetId}/messages`, {
       method: 'POST',
-      body: {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
         content: newMessage.value
-      }
+      }),
     })
 
-    if (response.status === 200) {
-      responseMessage.value = response.message
-      responseMessageType.value = 'success'
+    const data = await response.json();
+
+    if (data.status === 200) {
+      notificationStore.showNotification(data.message, 'success');
       newMessage.value = ''
       showForm.value = false
     } else {
-      responseMessage.value = response.message
-      responseMessageType.value = 'error'
+      notificationStore.showNotification(data.message, 'error');
     }
   } catch (err: any) {
-    responseMessage.value = 'Erreur inconnue lors de l’envoi.'
-    responseMessageType.value = 'error'
+    notificationStore.showNotification("Erreur serveur lors de la création du message", 'error');
   }
-
-  setTimeout(() => {
-    responseMessage.value = ''
-    responseMessageType.value = ''
-  }, 2000)
 }
-
 
 function openNewMessage() {
   if (!userStore.isAuthenticated) {
@@ -91,10 +86,7 @@ function openNewMessage() {
   <div class="min-h-screen bg-[#1a1a1b] py-8 px-4">
 
     <!-- Header du sujet -->
-    <Loader v-if="pendingSujet && !errorSujet" message="Chargement du sujet..." />
-    <div v-else-if="errorSujet" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-      {{ errorSujet }}
-    </div>
+    <Loader v-if="pendingSujet" message="Chargement du sujet..." />
 
     <div v-else-if="sujet">
       <SujetHead :sujet="sujet" :withDescription="true" :isLinkEnabled="false" />
@@ -120,26 +112,15 @@ function openNewMessage() {
         </div>
       </div>
     </div>
-    
-    <!-- Messages temporaire-->
-    <div v-if="responseMessage" :class="{
-      'bg-green-100 text-green-700 border-green-400': responseMessageType === 'success',
-      'bg-red-100 text-red-700 border-red-400': responseMessageType === 'error'
-    }" class="border px-4 py-3 rounded mb-4">
-      {{ responseMessage }}
-    </div>
 
     <!-- Messages du sujet -->
-    <Loader v-if="pendingMessage && !errorMessage" message="Chargement des messages..." />
-    <div v-else-if="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-      {{ errorMessage }}
-    </div>
+    <Loader v-if="pendingMessage" message="Chargement des messages..." />
 
     <div v-else-if="messages.length > 0">
       <Message v-for="message in messages" :key="message.id" :message="message" />
     </div>
     <div v-else class="text-gray-400 text-center mb-12">
-      Aucun message trouvé.
+      Aucun message ici.
     </div>
 
     <v-divider></v-divider>

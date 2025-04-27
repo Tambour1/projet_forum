@@ -15,7 +15,7 @@ export default defineWrappedResponseHandler(async (event) => {
     if (!messageId || !content) {
       return {
         status: 400,
-        message: "L'ID du message et le contenu sont requis.",
+        message: "Contenu manquant",
       };
     }
   
