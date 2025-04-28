@@ -110,7 +110,6 @@ async function sendMessage() {
       if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send('ping')
       }
-      refreshMessages()
     } else {
       notificationStore.showNotification(data.message, 'error');
     }
