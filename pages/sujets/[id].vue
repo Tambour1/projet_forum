@@ -13,6 +13,47 @@ const modalType = ref<null | 'login' | 'register'>(null)
 const userStore = useUserStore()
 const notificationStore = useNotificationStore()
 
+let ws : WebSocket
+
+const connectWebSocket = () => {
+  const isSecure = location.protocol === 'https:'
+  const url = `${isSecure ? 'wss' : 'ws'}://${location.host}/_ws`
+
+  if (ws) {
+    ws.close()
+  }
+
+  ws = new WebSocket(url)
+
+  ws.addEventListener('open', () => {
+    console.log('WebSocket connecté!')
+  })
+
+  ws.addEventListener('message', (event) => {
+    const message = event.data
+    console.log(`Message recu via Websocket: ${message}`)
+
+    if(message === 'pong') {
+      refreshMessages()
+    }
+  })
+
+  ws.addEventListener('close', () => {
+    console.log('WebSocket déconnecté. Reconnexion...')
+    setTimeout(connectWebSocket, 3000)
+  })
+}
+
+onMounted(() => {
+  connectWebSocket()
+})
+
+onUnmounted(() => {
+  if (ws) {
+    ws.close()
+  }
+})
+
 const { data: sujetData, pending: pendingSujet } = useAsyncData(`sujet-${sujetId}`, () =>
   $fetch(`/api/sujets/${sujetId}`)
 );
@@ -65,11 +106,37 @@ async function sendMessage() {
       notificationStore.showNotification(data.message, 'success');
       newMessage.value = ''
       showForm.value = false
+
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send('ping')
+      }
+      refreshMessages()
     } else {
       notificationStore.showNotification(data.message, 'error');
     }
   } catch (err: any) {
     notificationStore.showNotification("Erreur serveur lors de la création du message", 'error');
+  }
+}
+
+async function refreshMessages() {
+  try {
+    const response = await fetch(`/api/sujets/${sujetId}/messages`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    if (data.status === 200) {
+      messageData.value = data; 
+    } else {
+      notificationStore.showNotification(data.message, 'error');
+    }
+  } catch (err: any) {
+    notificationStore.showNotification("Erreur lors du rafraîchissement des messages", 'error');
   }
 }
 
