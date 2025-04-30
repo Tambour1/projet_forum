@@ -1,14 +1,20 @@
-<script setup>
-import { ref } from 'vue';
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
 import LoginModal from '~/components/LoginModal.vue';
 import RegisterModal from '~/components/RegisterModal.vue';
 import Navside from '~/components/Navside.vue';
 import { useUserStore } from '~/stores/user'
 import { useNotificationStore } from '~/stores/notification';
+import { useWebSocketStore } from '@/stores/websocket'
 
 const modalType = ref(null);
 const userStore = useUserStore()
 const notificationStore = useNotificationStore();
+
+onMounted(() => {
+  const wsStore = useWebSocketStore()
+  wsStore.connect()
+});
 </script>
 
 <template>

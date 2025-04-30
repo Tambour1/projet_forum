@@ -6,9 +6,11 @@ import { ChevronLeftIcon, TrashIcon } from '@heroicons/vue/24/solid'
 import { timeSince } from '../mixins/utils'
 import { useUserStore } from '@/stores/user';
 import { useNotificationStore } from '~/stores/notification';
+import { useWebSocketStore } from '@/stores/websocket'
 
 const userStore = useUserStore();
 const notificationStore = useNotificationStore();
+const websocketStore = useWebSocketStore();
 const router = useRouter();
 
 const props = defineProps<{
@@ -39,6 +41,7 @@ const deleteSujet = async () => {
       notificationStore.showNotification(data.message, 'error');
     } else if (data.status === 200) {
       notificationStore.showNotification(data.message, 'success');
+      websocketStore.send('ping');
     }
   } finally {
     if(props.withDescription) {

@@ -3,17 +3,31 @@ import { ref, onMounted } from 'vue'
 import { useForumStore } from '@/stores/forums'
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/vue/24/solid'
 import { useRouter } from 'vue-router'
+import { useWebSocketStore } from '@/stores/websocket'
 
 const items = [{ title: 'Forums' }]
 
 const forumsStore = useForumStore()
+const websocketStore = useWebSocketStore()
 await forumsStore.fetchForums()
 
 const visibleCounts = ref<number[]>([])
 
 onMounted(() => {
   visibleCounts.value = items.map(() => 5)
+  websocketStore.connect()
+  websocketStore.addListener(websocketReload)
 })
+
+onUnmounted(() => {
+  websocketStore.removeListener(websocketReload)
+})
+
+function websocketReload(message: string) {
+  if (message === 'pong') {
+    forumsStore.fetchForums()
+  }
+}
 
 const showMore = (groupIndex: number) => {
   visibleCounts.value[groupIndex] += 5

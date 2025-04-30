@@ -3,12 +3,14 @@ import { useRoute, useRouter } from 'vue-router'
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user';
 import { useNotificationStore } from '@/stores/notification';
+import { useWebSocketStore } from '@/stores/websocket'
 
 const route = useRoute()
 const router = useRouter()
 const forumId = Number(route.params.id)
 const userStore = useUserStore();
 const notificationStore = useNotificationStore();
+const websocketStore = useWebSocketStore()
 
 const title = ref('')
 const content = ref('')
@@ -39,7 +41,8 @@ const submitForm = async () => {
       notificationStore.showNotification(data.message, 'error');
     } else if (data.status === 201) {
       notificationStore.showNotification(data.message, 'success');
-      router.push(`/forums/${forumId}`)
+      websocketStore.send('ping')
+      router.push(`/forums/${forumId}`);
     }
   } catch (error) {
     notificationStore.showNotification('Erreur serveur lors de la création du sujet.', 'error');

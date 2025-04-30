@@ -4,9 +4,11 @@ import { useUserStore } from '@/stores/user'
 import { timeSince } from '../mixins/utils'
 import { PencilIcon, TrashIcon } from '@heroicons/vue/24/solid'
 import { useNotificationStore } from '@/stores/notification';
+import { useWebSocketStore } from '@/stores/websocket'
 
 const userStore = useUserStore()
 const notificationStore = useNotificationStore();
+const websocketStore = useWebSocketStore()
 
 const props = defineProps<{
   message: {
@@ -44,6 +46,7 @@ const editMessage = async () => {
       notificationStore.showNotification(data.message, 'error');
     } else if (data.status === 200) {
       notificationStore.showNotification(data.message, 'success');
+      websocketStore.send('ping');
       showEdit.value = false;
     }   
   } catch (error) {
@@ -64,6 +67,7 @@ const deleteMessage = async () => {
       notificationStore.showNotification(data.message, 'error');
     } else if (data.status === 200) {
       notificationStore.showNotification(data.message, 'success');
+      websocketStore.send('ping');
       showDeleteModal.value = false
     }  
   } catch (error) {

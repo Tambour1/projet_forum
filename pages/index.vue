@@ -1,9 +1,26 @@
 <script setup lang="ts">
 import { useForumStore } from '~/stores/forums'
+import { useWebSocketStore } from '@/stores/websocket'
 
 const forumStore = useForumStore()
+const websocketStore = useWebSocketStore()
 
 await forumStore.fetchForums()
+
+onMounted(() => {
+  websocketStore.connect()
+  websocketStore.addListener(websocketReload)
+})
+
+onUnmounted(() => {
+  websocketStore.removeListener(websocketReload)
+})
+
+function websocketReload(message: string) {
+  if (message === 'pong') {
+    forumsStore.fetchForums()
+  }
+}
 </script>
 
 

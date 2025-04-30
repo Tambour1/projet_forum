@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useNotificationStore } from '@/stores/notification';
+import { useWebSocketStore } from '@/stores/websocket'
 
 const route = useRoute()
 const sujetId = route.params.id
@@ -12,47 +13,24 @@ const modalType = ref<null | 'login' | 'register'>(null)
 
 const userStore = useUserStore()
 const notificationStore = useNotificationStore()
+const websocketStore = useWebSocketStore()
 
-let ws : WebSocket
-
-const connectWebSocket = () => {
-  const isSecure = location.protocol === 'https:'
-  const url = `${isSecure ? 'wss' : 'ws'}://${location.host}/_ws`
-
-  if (ws) {
-    ws.close()
-  }
-
-  ws = new WebSocket(url)
-
-  ws.addEventListener('open', () => {
-    console.log('WebSocket connecté!')
-  })
-
-  ws.addEventListener('message', (event) => {
-    const message = event.data
-    console.log(`Message recu via Websocket: ${message}`)
-
-    if(message === 'pong') {
-      refreshMessages()
-    }
-  })
-
-  ws.addEventListener('close', () => {
-    console.log('WebSocket déconnecté. Reconnexion...')
-    setTimeout(connectWebSocket, 3000)
-  })
-}
 
 onMounted(() => {
-  connectWebSocket()
+  websocketStore.connect()
+  websocketStore.addListener(websocketReload)
 })
 
 onUnmounted(() => {
-  if (ws) {
-    ws.close()
-  }
+  websocketStore.removeListener(websocketReload)
 })
+
+function websocketReload(message: string) {
+  if (message === 'pong') {
+    refreshMessages()
+  }
+}
+
 
 const { data: sujetData, pending: pendingSujet } = useAsyncData(`sujet-${sujetId}`, () =>
   $fetch(`/api/sujets/${sujetId}`)
@@ -106,10 +84,7 @@ async function sendMessage() {
       notificationStore.showNotification(data.message, 'success');
       newMessage.value = ''
       showForm.value = false
-
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send('ping')
-      }
+      websocketStore.send('ping')
     } else {
       notificationStore.showNotification(data.message, 'error');
     }

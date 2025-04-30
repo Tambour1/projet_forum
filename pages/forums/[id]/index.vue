@@ -4,34 +4,73 @@ import { ref, computed } from 'vue';
 import { PlusIcon } from '@heroicons/vue/24/solid';
 import { useUserStore } from '@/stores/user';
 import { useNotificationStore } from '@/stores/notification';
+import { useWebSocketStore } from '@/stores/websocket'
 
 const route = useRoute();
 const router = useRouter();
 const forumId = route.params.id;
 const userStore = useUserStore();
 const notificationStore = useNotificationStore();
+const websocketStore = useWebSocketStore()
 
 const modalType = ref<null | 'login' | 'register'>(null);
 
-const { data, pending } = useAsyncData('forum-sujets', () =>
+onMounted(() => {
+  websocketStore.connect()
+  websocketStore.addListener(websocketReload)
+})
+
+onUnmounted(() => {
+  websocketStore.removeListener(websocketReload)
+})
+
+function websocketReload(message: string) {
+  if (message === 'pong') {
+    refreshSujets()
+  }
+}
+
+
+const { data : forumData, pending } = useAsyncData('forum-sujets', () =>
   $fetch(`/api/forums/${forumId}`)
 );
 
 const sujets = computed(() => {
-  return data.value?.status === 200 ? data.value?.sujets : [];
+  return forumData.value?.status === 200 ? forumData.value?.sujets : [];
 });
 
 const forumName = computed(() => {
-  return data.value?.status === 200 ? data.value?.forum_name : '';
+  return forumData.value?.status === 200 ? forumData.value?.forum_name : '';
 });
 
-watch(data, (newData) => {
+watch(forumData, (newData) => {
   if (!newData) return;
 
   if (newData.status === 400 || newData.status === 404 || newData.status === 500) {
     notificationStore.showNotification(newData.message, 'error');
   }
 });
+
+async function refreshSujets() {
+  try {
+    const response = await fetch(`/api/forums/${forumId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    if (data.status === 200) {
+      forumData.value = data;
+    } else {
+      notificationStore.showNotification(data.message, 'error');
+    }
+  } catch (err: any) {
+    notificationStore.showNotification("Erreur lors du rafraîchissement des sujets", 'error');
+  }
+}
 
 const openNewSujet = () => {
   if (!userStore.isAuthenticated) {

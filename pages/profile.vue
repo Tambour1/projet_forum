@@ -4,10 +4,12 @@ import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
 import { useForumStore } from '@/stores/forums'
 import { useNotificationStore } from '@/stores/notification';
+import { useWebSocketStore } from '@/stores/websocket'
 
 const forumStore = useForumStore()
 const userStore = useUserStore();
 const notificationStore = useNotificationStore();
+const websocketStore = useWebSocketStore()
 const router = useRouter();
 
 const newAdmin = ref({ username: '', password: '' });
@@ -63,6 +65,7 @@ const createForum = async () => {
       notificationStore.showNotification(data.message, 'error');
     } else if (data.status === 201) {
       notificationStore.showNotification(data.message, 'success');
+      websocketStore.send('ping')
       newForum.value = { name: '', description: '' }
     }
   } catch (error) {
@@ -88,6 +91,7 @@ const renameForum = async () => {
       notificationStore.showNotification(data.message, 'error');
     } else if (data.status === 200) {
       notificationStore.showNotification(data.message, 'success');
+      websocketStore.send('ping')
       renameForumName.value = ''
     }
   } catch (error) {
@@ -108,6 +112,7 @@ const deleteForum = async () => {
       notificationStore.showNotification(data.message, 'error');
     } else if (data.status === 200) {
       notificationStore.showNotification(data.message, 'success');
+      websocketStore.send('ping')
       deleteForumId.value = ''
     } 
   } catch (error) {
